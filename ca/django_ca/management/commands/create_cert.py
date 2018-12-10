@@ -14,15 +14,22 @@
 # see <http://www.gnu.org/licenses/>.
 
 from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes
+
+
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec
+from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 
 from ... import ca_settings
-from ...utils import is_power2, parse_key_curve
-from ..base import KeySizeAction, KeyCurveAction, PasswordAction
+from ...utils import is_power2
+from ...utils import parse_key_curve
+from ..base import KeyCurveAction
+from ..base import KeySizeAction
+from ..base import PasswordAction
 from .sign_cert import Command as SignCommand
 
 

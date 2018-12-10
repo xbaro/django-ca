@@ -375,21 +375,23 @@ class CertificateManager(CertificateManagerMixin, models.Manager):
         c = self.model(ca=ca)
         c.x509, csr = self.sign_cert(ca, csr, **kwargs)
         c.csr = csr.public_bytes(Encoding.PEM).decode('utf-8')
-        if kwargs['private_key'] is not None:
+
+        if kwargs.get('private_key') is not None:
             c.private_key_path = os.path.join(ca_settings.CA_DIR, '%s.key' % c.serial.replace(':', ''))
         c.save()
 
-        if kwargs['private_key_password'] is None:
-            encryption = serialization.NoEncryption()
-        else:
-            encryption = serialization.BestAvailableEncryption(kwargs['private_key_password'])
+        if kwargs.get('private_key') is not None:
+            if kwargs['private_key_password'] is None:
+                encryption = serialization.NoEncryption()
+            else:
+                encryption = serialization.BestAvailableEncryption(kwargs['private_key_password'])
 
-        pem = kwargs['private_key'].private_bytes(encoding=Encoding.PEM,
-                                        format=PrivateFormat.PKCS8,
-                                        encryption_algorithm=encryption)
+            pem = kwargs['private_key'].private_bytes(encoding=Encoding.PEM,
+                                            format=PrivateFormat.PKCS8,
+                                            encryption_algorithm=encryption)
 
-        # write private key to file
-        write_private_file(c.private_key_path, pem)
+            # write private key to file
+            write_private_file(c.private_key_path, pem)
 
         post_issue_cert.send(sender=self.model, cert=c)
         return c
