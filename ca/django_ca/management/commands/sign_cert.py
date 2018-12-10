@@ -119,7 +119,8 @@ the default values, options like --key-usage still override the profile.""")
                 csr += '%s\n' % six.moves.input()
             csr = csr.strip()
         else:
-            if isinstance(options['csr'], str) and options['csr'].startswith('-----BEGIN CERTIFICATE REQUEST-----\n'):
+            if isinstance(options['csr'], str) and options['csr'].startswith(
+                    '-----BEGIN CERTIFICATE REQUEST-----\n'):
                 csr = options['csr']
             elif isinstance(options['csr'], bytes) and options['csr'].startswith(
                     b'-----BEGIN CERTIFICATE REQUEST-----\n'):
