@@ -153,9 +153,14 @@ class OCSPView(View):
         if os.path.exists(self.responder_key):
             with open(self.responder_key, 'rb') as stream:
                 responder_key = stream.read()
-        else:
+        elif default_storage.exists(self.responder_key):
             with default_storage.open(self.responder_key, 'rb') as stream:
                 responder_key = stream.read()
+        else:
+            responder_cert = Certificate.objects.get(serial=self.responder_cert)
+            if responder_cert is not None and responder_cert.private_key_path is not None:
+                with default_storage.open(self.responder_cert.private_key_path.name, 'rb') as stream:
+                    responder_key = stream.read()
 
         # try to load responder key and cert with oscrypto, to make sure they are actually usable
         return load_private_key(responder_key)
