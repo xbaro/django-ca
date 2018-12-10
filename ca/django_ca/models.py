@@ -17,9 +17,10 @@ import base64
 import binascii
 import hashlib
 import os
-import pytz
 import re
 import stat
+
+import pytz
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
