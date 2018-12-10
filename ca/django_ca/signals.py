@@ -22,8 +22,14 @@ If you use **django-ca** as :ref:`standalone project <as-standalone>`, use the :
 <settings-ca-custom-apps>` setting to add a custom django app. Please see the `Django documentation on apps
 <https://docs.djangoproject.com/en/dev/ref/applications/>`_ if you need help on writing Django apps.
 """
+import os
+import stat
 
+from django.db.models.signals import post_delete
 import django.dispatch
+
+from .models import Certificate
+from .models import CertificateAuthority
 
 pre_create_ca = django.dispatch.Signal(providing_args=['name', '**kwargs'])
 """Called before a new certificate authority is created.
@@ -88,3 +94,47 @@ Parameters
 cert : :py:class:`~django_ca.models.Certificate`
     The certificate that was just revoked.
 """
+
+
+@django.dispatch.receiver(post_delete, sender=CertificateAuthority)
+def pre_delete_ca(sender, instance, using):
+    """Called after a certificate authority is deleted
+
+    Parameters
+    ----------
+
+    cert : :py:class:`~django_ca.models.Certificate`
+        The certificate that was just revoked.
+    """
+    # Get storage and file_name
+    storage, name = instance.private_key_path.storage, instance.private_key_path.path
+    # Delete the private key
+    try:
+        key_path = storage.path(name)
+        os.chmod(key_path, stat.S_IWRITE)
+    except NotImplementedError:
+        pass
+    if storage.exists(name):
+        storage.delete(name)
+
+
+@django.dispatch.receiver(post_delete, sender=Certificate)
+def pre_delete_cert(sender, instance, using):
+    """Called after a certificate is deleted
+
+    Parameters
+    ----------
+
+    cert : :py:class:`~django_ca.models.Certificate`
+        The certificate that was just revoked.
+    """
+    # Get storage and file_name
+    storage, name = instance.private_key_path.storage, instance.private_key_path.path
+    # Delete the private key
+    try:
+        key_path = storage.path(name)
+        os.chmod(key_path, stat.S_IWRITE)
+    except NotImplementedError:
+        pass
+    if storage.exists(name):
+        storage.delete(name)

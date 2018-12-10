@@ -579,19 +579,6 @@ class CertificateAuthority(X509CertMixin):
     def __str__(self):
         return self.name
 
-    def delete(self, *args, **kwargs):
-        # Get storage and file_name
-        storage, name = self.private_key_path.storage, self.private_key_path.path
-        # Delete the model
-        super(CertificateAuthority, self).delete(*args, **kwargs)
-        # Delete the private key
-        try:
-            key_path = storage.path(name)
-            os.chmod(key_path, stat.S_IWRITE)
-        except NotImplementedError:
-            pass
-        storage.delete(name)
-
 
 class Certificate(X509CertMixin):
     objects = CertificateManager.from_queryset(CertificateQuerySet)()
@@ -623,16 +610,3 @@ class Certificate(X509CertMixin):
 
             self._key = load_pem_private_key(key_data, password, default_backend())
         return self._key
-
-    def delete(self, *args, **kwargs):
-        # Get storage and file_name
-        storage, name = self.private_key_path.storage, self.private_key_path.path
-        # Delete the model
-        super(Certificate, self).delete(*args, **kwargs)
-        # Delete the private key
-        try:
-            key_path = storage.path(name)
-            os.chmod(key_path, stat.S_IWRITE)
-        except NotImplementedError:
-            pass
-        storage.delete(name)
