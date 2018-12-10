@@ -475,7 +475,7 @@ class CertificateAuthority(X509CertMixin):
     enabled = models.BooleanField(default=True)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                related_name='children')
-    private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'))
+    private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'), null=True, blank=True)
 
     # various details used when signing certs
     crl_url = models.TextField(blank=True, null=True, validators=[multiline_url_validator],
@@ -487,6 +487,8 @@ class CertificateAuthority(X509CertMixin):
                                help_text=_("URL of a OCSP responser for the CA."))
     issuer_alt_name = models.URLField(blank=True, null=True, verbose_name=_('issuerAltName'),
                                       help_text=_("URL for your CA."))
+
+    csr = models.TextField(verbose_name=_('CSR'), null=True, blank=True)
 
     _key = None
 
@@ -583,6 +585,9 @@ class Certificate(X509CertMixin):
     ca = models.ForeignKey(CertificateAuthority, on_delete=models.CASCADE,
                            verbose_name=_('Certificate Authority'))
     csr = models.TextField(verbose_name=_('CSR'), blank=True)
+
+    private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'),
+                                        null=True, blank=True)
 
     @property
     def bundle(self):

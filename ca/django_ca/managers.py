@@ -241,7 +241,7 @@ class CertificateAuthorityManager(CertificateManagerMixin, models.Manager):
 class CertificateManager(CertificateManagerMixin, models.Manager):
     def sign_cert(self, ca, csr, expires=None, algorithm=None, subject=None, cn_in_san=True,
                   csr_format=Encoding.PEM, subjectAltName=None, key_usage=None, extended_key_usage=None,
-                  tls_feature=None, password=None):
+                  tls_feature=None, password=None, private_key=None, private_key_password=None):
         """Create a signed certificate from a CSR.
 
         **PLEASE NOTE:** This function creates the raw certificate and is usually not invoked directly. It is
@@ -375,7 +375,21 @@ class CertificateManager(CertificateManagerMixin, models.Manager):
         c = self.model(ca=ca)
         c.x509, csr = self.sign_cert(ca, csr, **kwargs)
         c.csr = csr.public_bytes(Encoding.PEM).decode('utf-8')
+        if kwargs['private_key'] is not None:
+            c.private_key_path = os.path.join(ca_settings.CA_DIR, '%s.key' % c.serial.replace(':', ''))
         c.save()
+
+        if kwargs['private_key_password'] is None:
+            encryption = serialization.NoEncryption()
+        else:
+            encryption = serialization.BestAvailableEncryption(kwargs['private_key_password'])
+
+        pem = kwargs['private_key'].private_bytes(encoding=Encoding.PEM,
+                                        format=PrivateFormat.PKCS8,
+                                        encryption_algorithm=encryption)
+
+        # write private key to file
+        write_private_file(c.private_key_path, pem)
 
         post_issue_cert.send(sender=self.model, cert=c)
         return c

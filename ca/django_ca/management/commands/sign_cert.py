@@ -81,7 +81,10 @@ the default values, options like --key-usage still override the profile.""")
 
         # get extensions based on profiles
         kwargs = get_cert_profile_kwargs(options['profile'])
-        kwargs['subject'] = Subject(kwargs.get('subject'))
+        if options.get('subject') is None:
+            kwargs['subject'] = Subject(kwargs.get('subject'))
+        else:
+            kwargs['subject'] = options['subject']
         kwargs['password'] = options['password']
         kwargs['csr_format'] = options['csr_format']
         if options['cn_in_san'] is not None:
@@ -92,6 +95,13 @@ the default values, options like --key-usage still override the profile.""")
             kwargs['extended_key_usage'] = options['ext_key_usage']
         if options['tls_feature']:
             kwargs['tls_feature'] = options['tls_feature']
+
+        kwargs['private_key_password'] = None
+        kwargs['private_key'] = None
+
+        if options['private_key'] is not None:
+            kwargs['private_key'] = options['private_key']
+            kwargs['private_key_password'] = options['private_key_password']
 
         # update subject with arguments from the command line
         if options.get('subject'):
@@ -109,8 +119,11 @@ the default values, options like --key-usage still override the profile.""")
                 csr += '%s\n' % six.moves.input()
             csr = csr.strip()
         else:
-            with open(options['csr'], 'rb') as stream:
-                csr = stream.read()
+            if options['csr'].startswith(b'-----BEGIN CERTIFICATE REQUEST-----\n'):
+                csr = options['csr']
+            else:
+                with open(options['csr'], 'rb') as stream:
+                    csr = stream.read()
 
         try:
             cert = Certificate.objects.init(
