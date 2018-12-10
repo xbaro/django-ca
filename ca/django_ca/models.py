@@ -585,7 +585,7 @@ class CertificateAuthority(X509CertMixin):
 @receiver(post_delete, sender=CertificateAuthority)
 def post_delete_ca(*args, **kwargs):
     # Get storage and file_name
-    storage, name = args['instance'].private_key_path.storage, args['instance'].private_key_path.path
+    storage, name = kwargs['instance'].private_key_path.storage, kwargs['instance'].private_key_path.path
     # Delete the private key
     try:
         key_path = storage.path(name)
@@ -631,7 +631,7 @@ class Certificate(X509CertMixin):
 @receiver(post_delete, sender=Certificate)
 def post_delete_cert(*args, **kwargs):
     # Get storage and file_name
-    storage, name = args['instance'].private_key_path.storage, args['instance'].private_key_path.path
+    storage, name = kwargs['instance'].private_key_path.storage, kwargs['instance'].private_key_path.path
     # Delete the private key
     try:
         key_path = storage.path(name)
