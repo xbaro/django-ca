@@ -494,8 +494,8 @@ class CertificateAuthority(X509CertMixin):
     _key = None
 
     def key(self, password):
-        if self._key is None:
-            with default_storage.open(self.private_key_path, 'rb') as f:
+        if self._key is None and self.private_key_path is not None:
+            with default_storage.open(self.private_key_path.name, 'rb') as f:
                 key_data = f.read()
 
             self._key = load_pem_private_key(key_data, password, default_backend())
@@ -590,6 +590,8 @@ class Certificate(X509CertMixin):
     private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'),
                                         null=True, blank=True)
 
+    _key = None
+
     @property
     def bundle(self):
         """The complete certificate bundle. This includes all CAs as well as the certificates itself."""
@@ -598,3 +600,11 @@ class Certificate(X509CertMixin):
 
     def __str__(self):
         return self.cn
+
+    def key(self, password):
+        if self._key is None and self.private_key_path is not None:
+            with default_storage.open(self.private_key_path.name, 'rb') as f:
+                key_data = f.read()
+
+            self._key = load_pem_private_key(key_data, password, default_backend())
+        return self._key
