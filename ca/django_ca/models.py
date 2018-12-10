@@ -475,7 +475,8 @@ class CertificateAuthority(X509CertMixin):
     enabled = models.BooleanField(default=True)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                related_name='children')
-    private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'), null=True, blank=True)
+    private_key_path = models.FileField(upload_to=ca_settings.CA_DIR, help_text=_('Path to the private key.'),
+                                        null=True, blank=True)
 
     # various details used when signing certs
     crl_url = models.TextField(blank=True, null=True, validators=[multiline_url_validator],

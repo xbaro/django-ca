@@ -387,8 +387,8 @@ class CertificateManager(CertificateManagerMixin, models.Manager):
                 encryption = serialization.BestAvailableEncryption(kwargs['private_key_password'])
 
             pem = kwargs['private_key'].private_bytes(encoding=Encoding.PEM,
-                                            format=PrivateFormat.PKCS8,
-                                            encryption_algorithm=encryption)
+                                                      format=PrivateFormat.PKCS8,
+                                                      encryption_algorithm=encryption)
 
             # write private key to file
             write_private_file(c.private_key_path, pem)

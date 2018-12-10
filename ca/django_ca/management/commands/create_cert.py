@@ -70,14 +70,15 @@ default profile, currently %s.""" % ca_settings.CA_DEFAULT_PROFILE
                 raise ValueError("%s: Key size must be least %s bits" % (
                     options['key_size'], ca_settings.CA_MIN_KEY_SIZE))
 
-        if options['key_type']  == 'DSA':
-            options['private_key'] = dsa.generate_private_key(key_size=options['key_size'], backend=default_backend())
-        elif options['key_type']  == 'ECC':
+        if options['key_type'] == 'DSA':
+            options['private_key'] = dsa.generate_private_key(key_size=options['key_size'],
+                                                              backend=default_backend())
+        elif options['key_type'] == 'ECC':
             ecc_curve = parse_key_curve(options['ecc_curve'])
             options['private_key'] = ec.generate_private_key(ecc_curve, default_backend())
         else:
             options['private_key'] = rsa.generate_private_key(public_exponent=65537, key_size=options['key_size'],
-                                                   backend=default_backend())
+                                                              backend=default_backend())
 
         # Generate a CSR
         csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
