@@ -99,7 +99,7 @@ the default values, options like --key-usage still override the profile.""")
         kwargs['private_key_password'] = None
         kwargs['private_key'] = None
 
-        if options['private_key'] is not None:
+        if options.get('private_key') is not None:
             kwargs['private_key'] = options['private_key']
             kwargs['private_key_password'] = options['private_key_password']
 
