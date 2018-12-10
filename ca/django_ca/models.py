@@ -36,6 +36,8 @@ from cryptography.x509.oid import ExtensionOID
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -580,6 +582,20 @@ class CertificateAuthority(X509CertMixin):
         return self.name
 
 
+@receiver(post_delete, sender=CertificateAuthority)
+def post_delete_ca(sender, instance, using):
+    # Get storage and file_name
+    storage, name = instance.private_key_path.storage, instance.private_key_path.path
+    # Delete the private key
+    try:
+        key_path = storage.path(name)
+        os.chmod(key_path, stat.S_IWRITE)
+    except NotImplementedError:
+        pass
+    if storage.exists(name):
+        storage.delete(name)
+
+
 class Certificate(X509CertMixin):
     objects = CertificateManager.from_queryset(CertificateQuerySet)()
 
@@ -610,3 +626,17 @@ class Certificate(X509CertMixin):
 
             self._key = load_pem_private_key(key_data, password, default_backend())
         return self._key
+
+
+@receiver(post_delete, sender=Certificate)
+def post_delete_cert(sender, instance, using):
+    # Get storage and file_name
+    storage, name = instance.private_key_path.storage, instance.private_key_path.path
+    # Delete the private key
+    try:
+        key_path = storage.path(name)
+        os.chmod(key_path, stat.S_IWRITE)
+    except NotImplementedError:
+        pass
+    if storage.exists(name):
+        storage.delete(name)
